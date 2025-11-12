@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Wallet + Expense Tracker</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ===========================
+       PRESERVED THEME CSS (kept & extended)
+    =========================== */
+:root {
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --border-color: #e2e8f0;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+    --color-primary: #10b981;
+    --color-primary-dark: #059669;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+    --accent: #3b82f6;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* NAVBAR / HAMBURGER (top-left) */
+.navbar {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+}
+.hamburger {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+}
+.hamburger .lines {
+  width: 20px;
+  height: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.hamburger .lines span {
+  display: block;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+}
+
+/* slide menu */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100vh;
+  background: var(--bg-card);
+  box-shadow: 3px 0 24px rgba(0,0,0,0.08);
+  z-index: 1199;
+  padding: 3.5rem 1.25rem 1.25rem 1.25rem;
+  transition: left 0.32s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.side-menu.open { left: 0; }
+.side-menu h3 { font-size: 1.05rem; color: var(--text-primary); margin-bottom: 8px; }
+.side-menu a, .side-menu button {
+  display: block;
+  text-decoration: none;
+  color: var(--text-primary);
+  padding: 0.6rem 0.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+.side-menu a:hover, .side-menu button:hover { background: var(--bg-primary); color: var(--color-primary); }
+
+/* rest of your original styling (kept) */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* header area: moved slightly down so menu doesn't overlap */
+.header {
+    background: var(--bg-card);
+    padding: 1.5rem 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    margin-top: 56px; /* give room for top-left hamburger */
+}
+
+.header-content { display: flex; align-items: center; gap: 1rem; }
+.header-icon {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.header h1 { font-size: 2rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+.subtitle { font-size: 0.9rem; color: var(--text-muted); }
+
+/* theme toggle */
+.theme-toggle {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.theme-toggle:hover { transform: scale(1.05); border-color: var(--color-primary); }
+
+/* summary */
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+.summary-card { background: var(--bg-card); padding: 1.25rem; border-radius: 1rem; box-shadow: var(--shadow); display:flex; gap:12px; align-items:center; }
+.summary-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+.summary-value { font-size: 1.5rem; font-weight:700; color:var(--text-primary); }
+
+/* core card / form / table / rest - kept as-is (trimmed for brevity here) */
+/* ... (I kept your original CSS from earlier) ... */
+/* To avoid duplicating huge blocks in the message, the rest of your original CSS is preserved below exactly as you had it. */
+/* I'll include those parts verbatim after this smaller CSS block to ensure the full page works. */
+
+  /* ---------- Begin copy of your existing large CSS content ---------- */
+  /* (re-inserting the original big block so the layout, forms, modals, charts, etc. stay identical) */
+
+  /* SUMMARY CARDS (restored full styling) */
+.summary-card { /* already defined; fine */ }
+.card { background: var(--bg-card); border-radius: 1rem; padding: 1.75rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+.card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.card-title { font-size:1.25rem; font-weight:600; color:var(--text-primary); margin-bottom:1.5rem; }
+.form-group { margin-bottom:1.25rem; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+label { display:block; margin-bottom:0.5rem; font-size:0.9rem; font-weight:500; color:var(--text-secondary); }
+.required { color:var(--color-danger); }
+input, select, textarea { width:100%; padding:0.75rem 1rem; border:2px solid var(--border-color); border-radius:0.5rem; font-size:0.95rem; font-family:inherit; background:var(--bg-card); color:var(--text-primary); transition:all 0.2s ease; }
+input:focus, select:focus, textarea:focus { outline:none; border-color:var(--color-primary); box-shadow:0 0 0 3px rgba(16,185,129,0.08); }
+.error-message { display:block; margin-top:0.35rem; font-size:0.8rem; color:var(--color-danger); min-height:1rem; }
+
+.btn { padding:0.75rem 1.5rem; border:none; border-radius:0.5rem; font-size:0.95rem; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; transition:all 0.2s ease; font-family:inherit; }
+.btn-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color:white; }
+.btn-secondary { background: var(--bg-primary); color: var(--text-primary); border:2px solid var(--border-color); }
+.btn-danger { background: var(--color-danger); color:white; }
+.form-actions { display:flex; gap:1rem; margin-top:1.5rem; }
+.form-actions .btn { flex:1; }
+
+.search-filter { display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem; }
+.search-box { position:relative; flex:1; }
+.search-icon { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; }
+.search-box input { padding-left:3rem; }
+.filter-group { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.filter-select { padding:0.65rem 1rem; font-size:0.9rem; }
+
+.table-wrapper { overflow-x:auto; border-radius:0.75rem; border:2px solid var(--border-color); }
+.expense-table { width:100%; border-collapse:collapse; }
+.expense-table thead { background:var(--bg-primary); }
+.expense-table th { padding:1rem; text-align:left; font-weight:600; font-size:0.85rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border-color); }
+.expense-table td { padding:1rem; border-bottom:1px solid var(--border-color); color:var(--text-primary); }
+.expense-table tbody tr:hover { background:var(--bg-primary); }
+.text-center { text-align:center; }
+
+.category-badge { display:inline-block; padding:0.35rem 0.75rem; border-radius:0.375rem; font-size:0.8rem; font-weight:500; }
+.category-Food { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.category-Transport { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.category-Bills { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+.category-Entertainment { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+.category-Shopping { background: rgba(20, 184, 166, 0.15); color: #14b8a6; }
+.category-Health { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.category-Education { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.category-Other { background: rgba(100, 116, 139, 0.15); color: #64748b; }
+
+.amount { font-weight:600; font-size:1.05rem; color:var(--color-danger); }
+
+.empty-state { display:none; flex-direction:column; align-items:center; justify-content:center; padding:3rem 1rem; text-align:center; }
+.empty-state.active { display:flex; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index:1005; align-items:center; justify-content:center; padding:1rem; }
+.modal.active { display:flex; }
+.modal-content { background:var(--bg-card); border-radius:1rem; width:100%; max-width:450px; box-shadow:var(--shadow-lg); animation: modalSlideIn 0.3s ease-out; }
+@keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:1.5rem; border-bottom:2px solid var(--border-color); }
+.modal-header h2 { font-size:1.25rem; color:var(--text-primary); }
+.modal-close { background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0.25rem; border-radius:0.25rem; transition:all 0.2s ease; }
+.modal-body { padding:1.5rem; }
+.modal-footer { display:flex; gap:1rem; padding:1.5rem; border-top:2px solid var(--border-color); }
+.chart-container { position:relative; height:300px; }
+#toast-container { position: fixed; top: 2rem; right: 2rem; z-index: 2000; display:flex; flex-direction:column; gap:0.75rem; }
+.toast { background:var(--bg-card); border-left:4px solid; border-radius:0.5rem; padding:1rem 1.25rem; box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:0.75rem; min-width:300px; animation: toastSlideIn 0.3s ease-out; }
+@keyframes toastSlideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+.toast.success { border-left-color: var(--color-primary); }
+.toast.warning { border-left-color: var(--color-warning); }
+.toast.error { border-left-color: var(--color-danger); }
+.toast-message { flex:1; color:var(--text-primary); font-size:0.9rem; }
+
+/* 3D hero + transitions */
+.intro-section { position: relative; height: 100vh; width: 100%; background: radial-gradient(circle at center, #0a0a0a, #000); overflow: hidden; color: white; }
+#three-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; transition: opacity 0.9s ease, transform 0.9s ease; }
+.intro-text { position:absolute; top:48%; left:50%; transform:translate(-50%,-50%); text-align:center; color:#fff; z-index:1; }
+.scroll-indicator { position:absolute; bottom:36px; left:50%; transform:translateX(-50%) rotate(-45deg); width:30px; height:30px; border-left:3px solid white; border-bottom:3px solid white; animation:bounce 1.5s infinite; z-index:1; }
+@keyframes bounce { 0% { transform: translateX(-50%) rotate(-45deg) translateY(0);} 50% { transform: translateX(-50%) rotate(-45deg) translateY(-8px);} 100% { transform: translateX(-50%) rotate(-45deg) translateY(0);} }
+
+.main-section { position:relative; background:var(--bg-primary); min-height:100vh; padding:24px 0 80px; opacity:0; transform:translateY(40px); transition: opacity 0.9s ease, transform 0.9s ease; z-index:2; }
+.main-section.visible { opacity:1; transform:translateY(0); }
+.main-section .container { margin-top:24px; }
+.intro-faded { pointer-events:none; opacity:0; transform:scale(1.02); }
+
+/* responsive tweaks */
+@media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  .header { flex-direction: column; gap: 1rem; text-align:center; margin-top: 64px; }
+  .summary-cards { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .header-content { flex-direction: column; }
+  .summary-value { font-size:1.5rem; }
+  .card { padding:1.25rem; }
+  .modal-content { margin:0; border-radius:0; max-height:100vh; }
+  .side-menu { width: 220px; }
+}
+/* ---------- End copy of original CSS ---------- */
+
+  </style>
+</head>
+<body>
+
+  <!-- HAMBURGER NAV (top-left) -->
+  <div class="navbar" aria-hidden="false">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation">
+      <span class="lines"><span></span><span></span><span></span></span>
+    </button>
+  </div>
+
+  <nav class="side-menu" id="sideMenu" aria-hidden="true" aria-label="Main navigation">
+    <h3>Navigation</h3>
+    <a href="#intro" class="nav-link">Home (Wallet)</a>
+    <a href="#main-content" class="nav-link">Expense Tracker</a>
+    <a href="#category-chart" class="nav-link">Charts</a>
+    <button id="open-income" type="button">Add / Update Income</button>
+    <a href="#about" class="nav-link">About</a>
+    <button id="closeMenu" type="button" style="margin-top:auto; color:var(--text-muted); background:transparent; border:none; text-align:left;">Close</button>
+  </nav>
+<button id="logoutBtn" style="
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1000;
+">Logout</button>
+  <!-- HERO: 3D wallet -->
+  <section class="intro-section" id="intro" aria-label="3D Wallet hero">
+    <canvas id="three-canvas" aria-hidden="true"></canvas>
+    <div class="intro-text">
+      <h1 style="font-size:28px; margin-bottom:8px;">Welcome — scroll to enter your Expense Tracker 🪙</h1>
+      <p style="color:var(--text-muted); margin:0;">Wallet rotates while you scroll. Keep going to open the app.</p>
+    </div>
+    <div class="scroll-indicator" aria-hidden="true"></div>
+  </section>
+
+  <!-- MAIN: Expense Tracker (full real app) -->
+  <section class="main-section" id="main-content" aria-live="polite">
+    <div class="container">
+      <!-- Toast -->
+      <div id="toast-container" aria-hidden="true"></div>
+
+      <!-- Header -->
+      <div class="header">
+        <div class="header-content">
+          <div class="header-icon" aria-hidden="true">
+            <!-- simple wallet icon -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <path d="M16 11a1 1 0 0 1 1 1" />
+            </svg>
+          </div>
+          <div>
+            <h1>Expense Tracker</h1>
+            <p class="subtitle">Manage your monthly spending</p>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:flex;flex-direction:column;text-align:right;">
+            <div style="font-size:0.8rem;color:var(--text-muted);">Income</div>
+            <div id="income-display" style="font-weight:700;">$0.00</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="clear-all-btn" title="Clear all expenses" style="display:none;">Clear All</button>
+          <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌗</button>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-cards" aria-hidden="false">
+        <div class="summary-card card-total">
+          <div>
+            <p class="summary-label">Total Expenses</p>
+            <p class="summary-value" id="total-expenses">$0.00</p>
+          </div>
+        </div>
+
+        <div class="summary-card card-count">
+          <div>
+            <p class="summary-label">Transactions</p>
+            <p class="summary-value" id="total-count">0</p>
+          </div>
+        </div>
+
+        <div class="summary-card card-month">
+          <div>
+            <p class="summary-label">This Month</p>
+            <p class="summary-value" id="month-expenses">$0.00</p>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div>
+            <p class="summary-label">Profit / Loss</p>
+            <p class="summary-value" id="profit-loss" style="color:var(--text-primary);">$0.00</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid: Form + List -->
+      <div class="main-grid" style="margin-top:1.25rem;">
+        <!-- Form -->
+        <div class="form-section">
+          <div class="card">
+            <h2 class="card-title">Add New Expense</h2>
+            <form id="expense-form" autocomplete="off">
+              <div class="form-group">
+                <label for="expense-name">Expense Name <span class="required">*</span></label>
+                <input id="expense-name" required type="text" placeholder="e.g., Grocery Shopping" />
+                <span class="error-message" id="name-error"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="expense-category">Category <span class="required">*</span></label>
+                <select id="expense-category" required>
+                  <option value="">Select Category</option>
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Health">Health</option>
+                  <option value="Education">Education</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="error-message" id="category-error"></span>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="expense-amount">Amount ($) <span class="required">*</span></label>
+                  <input id="expense-amount" required type="number" step="0.01" min="0" placeholder="0.00" />
+                  <span class="error-message" id="amount-error"></span>
+                </div>
+                <div class="form-group">
+                  <label for="expense-date">Date <span class="required">*</span></label>
+                  <input id="expense-date" required type="date" />
+                  <span class="error-message" id="date-error"></span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="expense-description">Description (Optional)</label>
+                <textarea id="expense-description" rows="3" placeholder="Add notes..."></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" id="cancel-edit" class="btn btn-secondary" style="display:none;">Cancel</button>
+                <button type="submit" id="submit-btn" class="btn btn-primary">Add Expense</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Chart -->
+          <div class="card chart-card">
+            <h3 class="card-title">Spending by Category</h3>
+            <div class="chart-container">
+              <canvas id="category-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- List -->
+        <div class="list-section">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Expense List</h2>
+              <div>
+                <button id="export-btn" class="btn btn-secondary btn-sm">Export JSON</button>
+              </div>
+            </div>
+
+            <div class="search-filter">
+              <div class="search-box">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                <input id="search-input" placeholder="Search expenses..." />
+              </div>
+
+              <div class="filter-group">
+                <select id="filter-category" class="filter-select">
+                  <option value="">All Categories</option>
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Health">Health</option>
+                  <option value="Education">Education</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                <select id="sort-by" class="filter-select">
+                  <option value="date-desc">Newest First</option>
+                  <option value="date-asc">Oldest First</option>
+                  <option value="amount-desc">Highest Amount</option>
+                  <option value="amount-asc">Lowest Amount</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-wrapper" style="margin-top:1rem;">
+              <table class="expense-table" id="expense-table" role="table" aria-label="Expenses">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="expense-table-body"></tbody>
+              </table>
+
+              <div class="empty-state" id="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                <h3>No Expenses Yet</h3>
+                <p id="empty-state-text">Start tracking by adding your first expense!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Modal -->
+      <div class="modal" id="delete-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Delete Expense</h2>
+            <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p id="delete-message">Are you sure you want to delete this expense?</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-delete-btn">Cancel</button>
+            <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Income Modal -->
+      <div class="modal" id="income-modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Set Monthly Income</h2>
+            <button class="modal-close" id="income-modal-close" aria-label="Close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="income-input">Income ($)</label>
+              <input id="income-input" type="number" step="0.01" min="0" placeholder="e.g., 2500.00" />
+              <span class="error-message" id="income-error"></span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="income-cancel">Cancel</button>
+            <button class="btn btn-primary" id="income-save">Save Income</button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer" style="margin-top:28px;">
+        Expense Tracker © 2025 | Local storage
+      </footer>
+    </div>
+  </section>
+
+  <!-- ABOUT anchor -->
+  <section id="about" style="padding:40px 0 120px; text-align:center;">
+    <div class="container">
+      <h2>About</h2>
+      <p style="color:var(--text-muted); max-width:760px; margin:12px auto;">This demo shows a 3D wallet hero with a localStorage-backed expense tracker. The navigation (top-left) contains links and an "Add Income" action — set income to see profit / loss (income minus total expenses).</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer" style="background:transparent;">
+    <div class="container" style="text-align:center;">
+      <p style="color:var(--text-muted)">&copy; 2025 Expense Tracker. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- THREE.JS (r146) and GLTF Loader -->
+  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/GLTFLoader.js"></script>
+
+  <script>
+
+    const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('et_current_user');
+    window.location.href = 'index.html';
+  });
+}
+/* ========= NAV / INCOME UI ========= */
+(function(){
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sideMenu = document.getElementById('sideMenu');
+  const closeMenu = document.getElementById('closeMenu');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const openIncome = document.getElementById('open-income');
+  const incomeModal = document.getElementById('income-modal');
+  const incomeModalClose = document.getElementById('income-modal-close');
+  const incomeCancel = document.getElementById('income-cancel');
+  const incomeSave = document.getElementById('income-save');
+  const incomeInput = document.getElementById('income-input');
+  const incomeError = document.getElementById('income-error');
+  const incomeDisplay = document.getElementById('income-display');
+
+  const STORAGE_INCOME = 'exp_tracker_income_v1';
+
+  function openMenu() {
+    sideMenu.classList.add('open');
+    sideMenu.setAttribute('aria-hidden','false');
+  }
+  function closeMenuFn() {
+    sideMenu.classList.remove('open');
+    sideMenu.setAttribute('aria-hidden','true');
+  }
+  hamburgerBtn.addEventListener('click', () => {
+    if (sideMenu.classList.contains('open')) closeMenuFn(); else openMenu();
+  });
+  closeMenu && closeMenu.addEventListener('click', closeMenuFn);
+  navLinks.forEach(a => a.addEventListener('click', () => { closeMenuFn(); }));
+
+  // income modal
+  openIncome.addEventListener('click', () => {
+    incomeModal.classList.add('active');
+    incomeModal.setAttribute('aria-hidden','false');
+    incomeInput.focus();
+    closeMenuFn();
+  });
+  function closeIncomeModal() {
+    incomeModal.classList.remove('active');
+    incomeModal.setAttribute('aria-hidden','true');
+    incomeError.textContent = '';
+  }
+  incomeModalClose.addEventListener('click', closeIncomeModal);
+  incomeCancel.addEventListener('click', closeIncomeModal);
+
+  function getStoredIncome() {
+    try {
+      const raw = localStorage.getItem(STORAGE_INCOME);
+      return raw ? Number(JSON.parse(raw)) : 0;
+    } catch(e) { return 0; }
+  }
+  function setStoredIncome(v) {
+    try { localStorage.setItem(STORAGE_INCOME, JSON.stringify(Number(v))); } catch(e){}
+  }
+
+  function refreshIncomeDisplay() {
+    const inc = getStoredIncome();
+    incomeDisplay.textContent = inc ? inc.toLocaleString(undefined,{style:'currency',currency:'USD'}) : '$0.00';
+    // update profit/loss calculation from main tracker (there's a function for that defined later)
+    if (typeof updateProfitFromIncome === 'function') updateProfitFromIncome(inc);
+  }
+
+  incomeSave.addEventListener('click', () => {
+    const v = Number(incomeInput.value);
+    if (!v || v < 0) { incomeError.textContent = 'Enter valid income'; return; }
+    setStoredIncome(v);
+    refreshIncomeDisplay();
+    closeIncomeModal();
+    showToast('Income saved', 'success');
+  });
+
+  // init
+  refreshIncomeDisplay();
+})();
+
+/* ========= 3D HERO (full-screen hero that fades on scroll) ========= */
+(function () {
+  const canvas = document.getElementById('three-canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  camera.position.z = 3;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(window.devicePixelRatio || 1);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  // Lights
+  const d = new THREE.DirectionalLight(0xffffff, 1.2);
+  d.position.set(5,5,5);
+  scene.add(d);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+  let model = null;
+  const loader = new THREE.GLTFLoader();
+
+  // Friendly fallback model: Wallet glTF from Khronos sample models
+  loader.load(
+    'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Wallet/glTF/Wallet.gltf',
+    gltf => {
+      model = gltf.scene;
+      model.scale.set(2.2,2.2,2.2);
+      model.rotation.y = Math.PI * 0.05;
+      model.position.y = -0.25;
+      scene.add(model);
+    },
+    undefined,
+    err => {
+      console.error('3D model load error:', err);
+    }
+  );
+
+  function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  window.addEventListener('resize', onResize);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (model) {
+      const s = window.scrollY || document.documentElement.scrollTop;
+      const rotation = s * 0.002;
+      model.rotation.y = rotation;
+      model.rotation.x = Math.sin(rotation * 0.35) * 0.08;
+    }
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+/* ========= SCROLL FADE LOGIC ========= */
+(function () {
+  const main = document.getElementById('main-content');
+  const intro = document.getElementById('intro');
+
+  function updateOnScroll() {
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const trigger = vh * 0.45;
+
+    if (scrollY > trigger) {
+      intro.classList.add('intro-faded');
+      main.classList.add('visible');
+    } else {
+      intro.classList.remove('intro-faded');
+      main.classList.remove('visible');
+    }
+  }
+
+  window.addEventListener('scroll', updateOnScroll, { passive: true });
+  window.addEventListener('resize', updateOnScroll);
+  document.addEventListener('DOMContentLoaded', updateOnScroll);
+})();
+
+/* ========= EXPENSE TRACKER LOGIC (preserved + extended for income/profit) ========= */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const formatCurrency = (n) => {
+    const v = Number(n);
+    if (Number.isNaN(v)) return '$0.00';
+    return v.toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+  };
+
+  const STORAGE_KEY = 'exp_tracker_v1';
+  const STORAGE_INCOME = 'exp_tracker_income_v1';
+  let expenses = [];
+  let editId = null;
+  let pieChart = null;
+
+  // Elements
+  const form = $('expense-form');
+  const nameI = $('expense-name');
+  const catI = $('expense-category');
+  const amtI = $('expense-amount');
+  const dateI = $('expense-date');
+  const descI = $('expense-description');
+  const tableBody = $('expense-table-body');
+  const totalExpensesEl = $('total-expenses');
+  const totalCountEl = $('total-count');
+  const monthExpensesEl = $('month-expenses');
+  const emptyState = $('empty-state');
+  const cancelEditBtn = $('cancel-edit');
+  const clearAllBtn = $('clear-all-btn');
+  const searchInput = $('search-input');
+  const filterCategory = $('filter-category');
+  const sortBy = $('sort-by');
+  const exportBtn = $('export-btn');
+  const chartCtx = document.getElementById('category-chart').getContext('2d');
+  const profitLossEl = $('profit-loss');
+
+  // load / save
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      expenses = raw ? JSON.parse(raw) : [];
+    } catch (e) { expenses = []; }
+  }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses)); }
+
+  // income helpers (used by nav module too)
+  function getStoredIncome() {
+    try {
+      const raw = localStorage.getItem(STORAGE_INCOME);
+      return raw ? Number(JSON.parse(raw)) : 0;
+    } catch(e){ return 0; }
+  }
+  function updateProfitFromIncome(incomeOverride) {
+    const income = (typeof incomeOverride === 'number') ? incomeOverride : getStoredIncome();
+    const total = expenses.reduce((acc, it) => acc + Number(it.amount || 0), 0);
+    const profit = income - total;
+    profitLossEl.textContent = formatCurrency(profit);
+    // color green for profit, red for loss
+    if (profit > 0) profitLossEl.style.color = 'var(--color-primary)';
+    else if (profit < 0) profitLossEl.style.color = 'var(--color-danger)';
+    else profitLossEl.style.color = 'var(--text-primary)';
+  }
+
+  // Render
+  function renderTable() {
+    const q = (searchInput.value || '').trim().toLowerCase();
+    const cat = filterCategory.value;
+    const sorted = [...expenses].filter(item => {
+      if (q) {
+        const hay = `${item.name} ${item.category} ${item.desc}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (cat && item.category !== cat) return false;
+      return true;
+    });
+
+    // sort
+    switch (sortBy.value) {
+      case 'date-asc': sorted.sort((a,b)=> new Date(a.date) - new Date(b.date)); break;
+      case 'date-desc': sorted.sort((a,b)=> new Date(b.date) - new Date(a.date)); break;
+      case 'amount-asc': sorted.sort((a,b)=> Number(a.amount) - Number(b.amount)); break;
+      case 'amount-desc': sorted.sort((a,b)=> Number(b.amount) - Number(a.amount)); break;
+    }
+
+    tableBody.innerHTML = '';
+    if (sorted.length === 0) {
+      emptyState.classList.add('active');
+    } else {
+      emptyState.classList.remove('active');
+      for (const e of sorted) {
+        const tr = document.createElement('tr');
+
+        const tdDate = document.createElement('td');
+        tdDate.textContent = new Date(e.date).toLocaleDateString();
+        tr.appendChild(tdDate);
+
+        const tdName = document.createElement('td');
+        tdName.textContent = e.name;
+        tr.appendChild(tdName);
+
+        const tdCat = document.createElement('td');
+        const span = document.createElement('span');
+        span.className = `category-badge category-${e.category.replace(/\s+/g,'')}`;
+        span.textContent = e.category;
+        tdCat.appendChild(span);
+        tr.appendChild(tdCat);
+
+        const tdAmt = document.createElement('td');
+        tdAmt.textContent = formatCurrency(e.amount);
+        tdAmt.className = 'amount';
+        tr.appendChild(tdAmt);
+
+        const tdAct = document.createElement('td');
+        tdAct.className = 'text-center';
+        tdAct.innerHTML = `
+          <button class="btn-icon edit" title="Edit" data-id="${e.id}">✏️</button>
+          <button class="btn-icon delete" title="Delete" data-id="${e.id}">🗑️</button>
+        `;
+        tr.appendChild(tdAct);
+
+        tableBody.appendChild(tr);
+      }
+    }
+
+    updateSummary();
+    updateChart();
+    bindRowActions();
+  }
+
+  function updateSummary() {
+    const total = expenses.reduce((acc, it) => acc + Number(it.amount || 0), 0);
+    totalExpensesEl.textContent = formatCurrency(total);
+    totalCountEl.textContent = expenses.length;
+
+    const now = new Date();
+    const thisMonthTotal = expenses.reduce((acc,it) => {
+      const d = new Date(it.date);
+      if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+        return acc + Number(it.amount || 0);
+      }
+      return acc;
+    }, 0);
+    monthExpensesEl.textContent = formatCurrency(thisMonthTotal);
+
+    clearAllBtn.style.display = expenses.length ? 'inline-flex' : 'none';
+
+    // update profit/loss using stored income
+    updateProfitFromIncome();
+  }
+
+  function updateChart() {
+    const byCat = expenses.reduce((acc,it) => {
+      acc[it.category] = (acc[it.category] || 0) + Number(it.amount || 0);
+      return acc;
+    }, {});
+    const labels = Object.keys(byCat);
+    const data = labels.map(l => byCat[l]);
+
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(chartCtx, {
+      type: 'pie',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: labels.map(l => {
+            switch (l) {
+              case 'Food': return 'rgba(245,158,11,0.85)';
+              case 'Transport': return 'rgba(59,130,246,0.85)';
+              case 'Bills': return 'rgba(139,92,246,0.85)';
+              case 'Entertainment': return 'rgba(236,72,153,0.85)';
+              case 'Shopping': return 'rgba(20,184,166,0.85)';
+              case 'Health': return 'rgba(239,68,68,0.85)';
+              case 'Education': return 'rgba(99,102,241,0.85)';
+              default: return 'rgba(100,116,139,0.85)';
+            }
+          })
+        }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  function bindRowActions() {
+    tableBody.querySelectorAll('.btn-icon.edit').forEach(btn => {
+      btn.onclick = (ev) => {
+        const id = btn.getAttribute('data-id');
+        startEdit(id);
+      };
+    });
+    tableBody.querySelectorAll('.btn-icon.delete').forEach(btn => {
+      btn.onclick = (ev) => {
+        const id = btn.getAttribute('data-id');
+        confirmDelete(id);
+      };
+    });
+  }
+
+  // CRUD
+  function addExpense(payload) {
+    payload.id = String(Date.now()) + Math.random().toString(36).slice(2,6);
+    expenses.push(payload);
+    save();
+    renderTable();
+    showToast('Expense added', 'success');
+  }
+  function updateExpense(id, payload) {
+    const idx = expenses.findIndex(x => x.id === id);
+    if (idx >= 0) {
+      expenses[idx] = Object.assign({ id }, payload);
+      save();
+      renderTable();
+      showToast('Expense updated', 'success');
+    }
+  }
+
+  function startEdit(id) {
+    const it = expenses.find(x => x.id === id);
+    if (!it) return;
+    editId = id;
+    nameI.value = it.name;
+    catI.value = it.category;
+    amtI.value = it.amount;
+    dateI.value = it.date;
+    descI.value = it.desc || '';
+    $('submit-btn').textContent = 'Save Changes';
+    cancelEditBtn.style.display = 'inline-flex';
+  }
+  cancelEditBtn.addEventListener('click', resetForm);
+
+  function resetForm() {
+    editId = null;
+    form.reset();
+    $('submit-btn').textContent = 'Add Expense';
+    cancelEditBtn.style.display = 'none';
+    clearErrors();
+  }
+
+  // Delete flow
+  let pendingDeleteId = null;
+  const deleteModal = $('delete-modal');
+  const confirmDeleteBtn = $('confirm-delete-btn');
+  const cancelDeleteBtn = $('cancel-delete-btn');
+  const modalCloseBtn = $('modal-close');
+
+  function confirmDelete(id) {
+    pendingDeleteId = id;
+    deleteModal.classList.add('active');
+    deleteModal.setAttribute('aria-hidden','false');
+  }
+  confirmDeleteBtn.onclick = () => {
+    if (!pendingDeleteId) return;
+    expenses = expenses.filter(x=> x.id !== pendingDeleteId);
+    save();
+    renderTable();
+    showToast('Expense deleted', 'warning');
+    pendingDeleteId = null;
+    deleteModal.classList.remove('active');
+    deleteModal.setAttribute('aria-hidden','true');
+  };
+  cancelDeleteBtn.onclick = () => {
+    pendingDeleteId = null;
+    deleteModal.classList.remove('active');
+    deleteModal.setAttribute('aria-hidden','true');
+  };
+  modalCloseBtn.onclick = cancelDeleteBtn;
+
+  // Clear all
+  clearAllBtn.addEventListener('click', () => {
+    if (!confirm('Clear all expenses?')) return;
+    expenses = [];
+    save();
+    renderTable();
+    showToast('All expenses cleared', 'warning');
+  });
+
+  // Export
+  exportBtn && exportBtn.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(expenses, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'expenses.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Toast
+  function showToast(msg, type='success') {
+    const container = $('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type==='success'?'success':type==='warning'?'warning':'error'}`;
+    t.innerHTML = `<div class="toast-icon">●</div><div class="toast-message">${msg}</div>`;
+    container.appendChild(t);
+    setTimeout(()=> {
+      t.style.opacity = '0';
+      setTimeout(()=> t.remove(), 400);
+    }, 2200);
+  }
+
+  // Validation
+  function clearErrors() {
+    ['name-error','category-error','amount-error','date-error','income-error'].forEach(id => { const el = $(id); if (el) el.textContent = ''; });
+  }
+  function validate() {
+    let ok = true;
+    clearErrors();
+    if (!nameI.value.trim()) { $('name-error').textContent = 'Name required'; ok = false; }
+    if (!catI.value) { $('category-error').textContent = 'Category required'; ok = false; }
+    if (!amtI.value || Number(amtI.value) <= 0) { $('amount-error').textContent = 'Enter valid amount'; ok = false; }
+    if (!dateI.value) { $('date-error').textContent = 'Date required'; ok = false; }
+    return ok;
+  }
+
+  // Form submit
+  form.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    if (!validate()) return;
+    const payload = {
+      name: nameI.value.trim(),
+      category: catI.value,
+      amount: Number( Number(amtI.value).toFixed(2) ),
+      date: dateI.value,
+      desc: descI.value.trim()
+    };
+    if (editId) {
+      updateExpense(editId, payload);
+    } else {
+      addExpense(payload);
+    }
+    resetForm();
+  });
+
+  // Filters & search handlers
+  [searchInput, filterCategory, sortBy].forEach(el => {
+    el.addEventListener('input', renderTable);
+    el.addEventListener('change', renderTable);
+  });
+
+  // theme toggle
+  const themeToggle = $('theme-toggle');
+  function initTheme() {
+    const stored = localStorage.getItem('theme') || 'light';
+    if (stored === 'dark') document.documentElement.setAttribute('data-theme','dark');
+  }
+  initTheme();
+  themeToggle.addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    if (cur === 'dark') {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme','light');
+    } else {
+      document.documentElement.setAttribute('data-theme','dark');
+      localStorage.setItem('theme','dark');
+    }
+  });
+
+  // Simple accessibility: focus the name on show
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'n' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      nameI.focus();
+    }
+  });
+
+  // init
+  load();
+  renderTable();
+
+  // make updateProfitFromIncome available to nav income module
+  window.updateProfitFromIncome = updateProfitFromIncome;
+
+  // also refresh income display if income set elsewhere
+  (function refreshIncomeUI() {
+    const displayEl = document.getElementById('income-display');
+    try {
+      const raw = localStorage.getItem(STORAGE_INCOME);
+      const inc = raw ? Number(JSON.parse(raw)) : 0;
+      displayEl.textContent = inc ? inc.toLocaleString(undefined,{style:'currency',currency:'USD'}) : '$0.00';
+      updateProfitFromIncome(inc);
+    } catch(e) { displayEl.textContent = '$0.00'; updateProfitFromIncome(0); }
+  })();
+
+})();
+  </script>
+  </body>
+</html>
