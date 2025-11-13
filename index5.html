@@ -588,7 +588,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
   </footer>
 
   <!-- THREE.JS (r146) and GLTF Loader -->
-  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/build/three.min.js"></script>
+ 
   <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/GLTFLoader.js"></script>
 
   <script>
@@ -693,7 +693,7 @@ if (logoutBtn) {
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
   let model = null;
-  const loader = new THREE.GLTFLoader();
+  // GLTFLoader();const loader = new THREE.
 
   // Friendly fallback model: Wallet glTF from Khronos sample models
   loader.load(
