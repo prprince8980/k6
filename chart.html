@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Line Chart</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #00b37a, #0078d4);
+      margin: 0;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      background: linear-gradient(90deg, #00b37a, #0078d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .chart-container {
+      width: 90%;
+      max-width: 900px;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    button {
+      margin-top: 20px;
+      background: linear-gradient(90deg,#0078d4,#00b37a);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      box-shadow: 0 0 8px white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Expenses Over Time</h1>
+  <div class="chart-container">
+    <canvas id="line-chart"></canvas>
+  </div>
+
+  <button onclick="window.location.href='index5.html'">⬅ Back to Dashboard</button>
+
+  <script>
+
+  // 🧩 Load all possible data sources
+  const currentUser = localStorage.getItem("et_current_user");
+  let raw = null;
+
+  if (currentUser) {
+    raw = localStorage.getItem(`exp_tracker_v1_${currentUser}`);
+  }
+
+  // fallback (if no login system or user key)
+  if (!raw) {
+    raw = localStorage.getItem("exp_tracker_v1");
+  }
+
+  const expenses = raw ? JSON.parse(raw) : [];
+
+  // 🧠 Build chart only if there is data
+  const ctx = document.getElementById('line-chart').getContext('2d');
+
+  if (expenses.length === 0) {
+    ctx.font = "18px Poppins";
+    ctx.fillStyle = "#000";
+    ctx.fillText("No expense data found. Please add expenses first.", 40, 80);
+  } else {
+    const byDate = {};
+    expenses.forEach(e => {
+      const date = new Date(e.date).toLocaleDateString();
+      byDate[date] = (byDate[date] || 0) + Number(e.amount || 0);
+    });
+
+    const labels = Object.keys(byDate).sort((a, b) => new Date(a) - new Date(b));
+    const data = labels.map(l => byDate[l]);
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Daily Expenses',
+          data,
+          borderColor: '#0078d4',
+          backgroundColor: 'rgba(0,120,212,0.25)',
+          tension: 0.4,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Daily Expenses Trend',
+            color: '#000',
+            font: { size: 16 }
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Date', color: '#000' } },
+          y: { title: { display: true, text: 'Amount ($)', color: '#000' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+
+  </script>
+</body>
+</html>
