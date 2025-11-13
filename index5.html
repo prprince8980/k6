@@ -749,9 +749,10 @@ if (logoutBtn) {
       if (model) {
         // ✅ Limit rotation so model stays visible
         const maxRotation = Math.PI * 2; // 1 full rotation
-        const scrollY = Math.min(window.scrollY * 0.002, maxRotation);
+        const scrollY = Math.min(window.scrollY * 0.006, maxRotation);
 
-        model.rotation.y = scrollY;
+       model.position.y = 0.5; // lift the model upward
+
         model.rotation.x = Math.sin(scrollY * 0.5) * 0.1; // subtle motion
 
         // ✅ Fade-out effect on heavy scroll
