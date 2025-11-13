@@ -57,7 +57,7 @@ body {
   position: fixed;
   top: 12px;
   left: 12px;
-  z-index: 1;
+  z-index: 1200;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -93,6 +93,7 @@ body {
   background: var(--text-primary);
   border-radius: 2px;
 }
+
 
 /* slide menu */
 .side-menu {
@@ -181,8 +182,27 @@ body {
     justify-content: center;
     transition: all 0.3s ease;
 }
-.theme-toggle:hover { transform: scale(1.05); border-color: var(--color-primary); }
 
+.theme-toggle:hover { transform: scale(1.05); border-color: var(--color-primary); }
+#logoutBtn
+{
+   position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(90deg,#00b37a,#0078d4);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  z-index: 1000;
+}
+
+#logoutBtn:hover
+{
+   background: linear-gradient(90deg,#0078d4,#00b37a);
+   cursor:pointer;
+   box-shadow: 0 0 4.5px white;
+}
 /* summary */
 .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
 .summary-card { background: var(--bg-card); padding: 1.25rem; border-radius: 1rem; box-shadow: var(--shadow); display:flex; gap:12px; align-items:center; }
@@ -326,20 +346,12 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
     <a href="#category-chart" class="nav-link">Charts</a>
     <button id="open-income" type="button">Add / Update Income</button>
     <a href="#about" class="nav-link">About</a>
+    <a href="C:\html\ksproject\idea.html" class="nav-link">Reduce Expenses</a>
+    <a href="C:\html\ksproject\reduce.html" class="nav-link">Creative Ideas</a>
     <button id="closeMenu" type="button" style="margin-top:auto; color:var(--text-muted); background:transparent; border:none; text-align:left;">Close</button>
   </nav>
-<button id="logoutBtn" style="
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 1000;
-">Logout</button>
+<button id="logoutBtn" 
+>Logout</button>
   <!-- HERO: 3D wallet -->
   <section class="intro-section" id="intro" aria-label="3D Wallet hero">
    <canvas id="three-canvas"></canvas>

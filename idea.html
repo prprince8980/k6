@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creative Income Ideas</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background:linear-gradient(135deg,#00b37a,black,#0078d4);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 20px 20px;
+      position: relative;
+      width: 100%;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    /* 🏠 Beautiful Home Button */
+    .home-btn {
+      position: absolute;
+      left: 25px;
+      top: 20px;
+      background: linear-gradient(90deg,#55625e,#636c72);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 22px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .home-btn:hover {
+      transform: scale(1);
+      box-shadow: 0 0 4.5px white;
+      background: linear-gradient(90deg,#de9e4a,#dadd3f);
+    }
+
+    .home-icon {
+      font-size: 1.3rem;
+      background: white;
+       color: #ff5722;
+      border-radius: 50%;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .home-btn:hover .home-icon {
+      /* background: #c0392b; */
+      color: white;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 90%;
+      max-width: 1100px;
+      margin-bottom: 60px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 25px;
+      text-align: center;
+      transition: transform 0.3s, background 0.3s;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      font-weight: 500;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-10px);
+    }
+
+    .solution-box {
+      display: none;
+      text-align: center;
+      margin-top: 40px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 30px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .back-btn {
+      margin-top: 20px;
+      background: #8e44ad;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #6a1b9a;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button class="home-btn" onclick="goToHome()">
+      <span class="home-icon">🏠</span>
+      <span>Home</span>
+    </button>
+
+    <h1>Creative Income Ideas 💡</h1>
+    <p>Earn smart, laugh harder! Click any idea to discover fun and surprisingly useful ways to make extra money.</p>
+  </header>
+
+  <div class="card-container" id="cardContainer"></div>
+
+  <div id="solution" class="solution-box">
+    <h2 id="solutionTitle">💰 Income Idea</h2>
+    <p id="solutionText"></p>
+    <button class="back-btn" onclick="goBack()">Back to Ideas</button>
+  </div>
+
+  <script>
+    const incomeIdeas = [
+      "🎨 Freelance your skills! Design, code, or even write bad poetry for cash — someone will buy it!",
+      "📸 Become a content creator — make reels about your plants, your dog, or your daily confusion!",
+      "🐶 Get paid to pet dogs. It’s real. You earn money and serotonin.",
+      "📦 Sell old stuff online — your clutter could be someone’s treasure or DIY project.",
+      "💻 Teach online — even if you only know how to open Excel, you’re ahead of 30% of people!",
+      "🛒 Start affiliate marketing — get paid for recommending things you already love.",
+      "📱 Manage small business social media — you're online all day anyway!",
+      "🎮 Stream your gameplay — if you’re bad at gaming, make it comedy!",
+      "✍ Write blogs about your life, coffee habits, or that one time you failed cooking pasta.",
+      "🎧 Try voice acting — if your voice sounds cool in the shower, that’s your sign!",
+      "🐝 Sell homemade honey, candles, or crafts — Etsy loves chaotic creativity.",
+      "🚗 Offer carpooling or delivery — get paid while driving and listening to your favorite music.",
+      "📷 Become a meme maker — laughter is profitable now.",
+      "🪴 Sell plants or make aesthetic terrariums — people love buying oxygen in style.",
+      "🎓 Tutor students online — you’ll learn patience and money management together.",
+      "🍰 Bake and sell desserts — everyone loves cake, especially when stressed.",
+      "🐾 Start a pet Instagram — your cat might become the next internet star.",
+      "🪙 Invest small in crypto or stocks — but please, Google everything twice first!",
+      "🧠 Sell your notes or study guides online — your hard work can pay twice!",
+      "🎁 Offer personalized gift wrapping — it’s like origami but profitable."
+    ];
+
+    const cardContainer = document.getElementById('cardContainer');
+
+    incomeIdeas.forEach((idea, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.textContent = `💡 Idea ${i + 1}`;
+
+      card.onclick = () => showIdea(i);
+      cardContainer.appendChild(card);
+    });
+
+    function showIdea(index) {
+      document.getElementById('cardContainer').style.display = 'none';
+      document.getElementById('solution').style.display = 'block';
+      document.getElementById('solutionText').innerText = incomeIdeas[index];
+    }
+
+    function goBack() {
+      document.getElementById('cardContainer').style.display = 'grid';
+      document.getElementById('solution').style.display = 'none';
+    }
+
+    function goToHome() {
+      window.location.href = "./index5.html";
+    }
+  </script>
+</body>
+</html>

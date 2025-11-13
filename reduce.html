@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Reduce Expenses</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background:linear-gradient(135deg,#00b37a,black,#0078d4);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 60px 20px 20px;
+      position: relative;
+      width: 100%;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #f1f1f1;
+      font-size: 1.1rem;
+    }
+
+    /* 🌟 Beautiful Home Button */
+    .home-btn {
+      position: absolute;
+      left: 25px;
+      top: 20px;
+      background: linear-gradient(90deg,#55625e,#636c72);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 22px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .home-btn:hover {
+      transform: scale(1);
+      box-shadow: 0 0 4.5px white;
+      background: linear-gradient(90deg,#de9e4a,#dadd3f);
+    }
+
+    .home-icon {
+      font-size: 1.3rem;
+      background: white;
+      color: #ff5722;
+      border-radius: 50%;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .home-btn:hover .home-icon {
+      /* background: #ff5722; */
+      color: white;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 90%;
+      max-width: 1000px;
+      margin-bottom: 60px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 25px;
+      text-align: center;
+      transition: transform 0.3s, background 0.3s;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      font-weight: 500;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-10px);
+    }
+
+    .solution-box {
+      display: none;
+      text-align: center;
+      margin-top: 40px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 30px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .back-btn {
+      margin-top: 20px;
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #004d40;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- 🏠 Beautiful Home Button -->
+    <button class="home-btn" onclick="goToHome()">
+      <span class="home-icon">🏠</span>
+      <span>Home</span>
+    </button>
+
+    <h1>How to Reduce Expenses 💸</h1>
+    <p>Save smart, laugh harder! Click any card to discover weirdly practical money-saving hacks.</p>
+  </header>
+
+  <div class="card-container">
+    <div class="card" onclick="showSolution(0)">🍔 Food Expenses</div>
+    <div class="card" onclick="showSolution(1)">🛍 Shopping</div>
+    <div class="card" onclick="showSolution(2)">✈ Travel</div>
+    <div class="card" onclick="showSolution(3)">💡 Electricity</div>
+    <div class="card" onclick="showSolution(4)">🎬 Entertainment</div>
+    <div class="card" onclick="showSolution(5)">📱 Mobile & Internet</div>
+    <div class="card" onclick="showSolution(6)">👗 Fashion</div>
+    <div class="card" onclick="showSolution(7)">☕ Coffee Addiction</div>
+    <div class="card" onclick="showSolution(8)">🍕 Late Night Cravings</div>
+    <div class="card" onclick="showSolution(9)">🎁 Gifting Others</div>
+  </div>
+
+  <div id="solution" class="solution-box">
+    <h2 id="solutionTitle">💡 Expense Tip</h2>
+    <p id="solutionText"></p>
+    <button class="back-btn" onclick="goHome()">Back to Tips</button>
+  </div>
+
+  <script>
+    const expenseTips = [
+      "🍳 Cook at home! Or convince your friend who loves cooking that it’s their love language. Bonus: free food & fake compliments!",
+      "🛒 If you’re bored, don’t open Amazon — open your fridge and reflect on your life choices instead.",
+      "🚴 Skip taxis! Walk, bike, or just pretend your car is allergic to fuel prices.",
+      "💡 Turn off lights when you leave a room. Surprise your electricity bill by making it think you moved out!",
+      "📺 Watch free YouTube tutorials instead of Netflix. You’ll learn AND save. Bonus: you might fall asleep faster = cheaper power!",
+      "📶 Reduce data plan. If memes take priority over meals, maybe it’s time to rethink your budget.",
+      "👗 Wear the same outfit proudly. Call it your 'minimalist era' — fashion influencers do it too (but charge extra).",
+      "☕ Make coffee at home. If you name your mug 'Starbucks,' it’s basically the same experience.",
+      "🍕 When cravings hit at midnight, drink water. If you’re still hungry after 10 minutes — congrats, you’re just bored.",
+      "🎁 Make handmade gifts! People love 'em — and you get to save money and brag about being creative."
+    ];
+
+    function showSolution(index) {
+      document.querySelector('.card-container').style.display = 'none';
+      document.getElementById('solution').style.display = 'block';
+      document.getElementById('solutionText').innerText = expenseTips[index];
+    }
+
+    function goHome() {
+      document.querySelector('.card-container').style.display = 'grid';
+      document.getElementById('solution').style.display = 'none';
+    }
+
+    function goToHome() {
+      // 🏡 Redirect to your main home page
+      window.location.href = "./index5.html";
+    }
+  </script>
+</body>
+</html>
