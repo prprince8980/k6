@@ -6,10 +6,7 @@
   <title>3D Wallet + Expense Tracker</title>
 
   <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/build/three.min.js"></script> 
-
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/MTLLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
     /* ===========================
@@ -288,16 +285,23 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
   .side-menu { width: 220px; }
 }
 /* ---------- End copy of original CSS ---------- */
-   #three-canvas {
-      position: fixed; /* ✅ Keep canvas fixed while scrolling */
+ #three-canvas {
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       display: block;
-      z-index: -1; /* keep behind other elements */
+      z-index: -1;
+      transition: opacity 0.6s ease;
     }
-
+    h1 {
+      color: white;
+      text-align: center;
+      font-family: sans-serif;
+      margin-top: 100vh;
+      font-size: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -332,11 +336,12 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
 ">Logout</button>
   <!-- HERO: 3D wallet -->
   <section class="intro-section" id="intro" aria-label="3D Wallet hero">
-    <canvas id="three-canvas" aria-hidden="true"></canvas>
-    <div class="intro-text">
+   <canvas id="three-canvas"></canvas>
+  <h1>Scroll down to rotate your 3D Wallet 🪙</h1>
+    <!-- <div class="intro-text">
       <h1 style="font-size:28px; margin-bottom:8px;">Welcome — scroll to enter your Expense Tracker 🪙</h1>
       <p style="color:var(--text-muted); margin:0;">Wallet rotates while you scroll. Keep going to open the app.</p>
-    </div>
+    </div> -->
     <div class="scroll-indicator" aria-hidden="true"></div>
   </section>
 
@@ -588,10 +593,13 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
   </footer>
 
   <!-- THREE.JS (r146) and GLTF Loader -->
- 
-  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/GLTFLoader.js"></script>
+   <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/MTLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/OBJLoader.js"></script>
 
   <script>
+    
+  
 
     const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
@@ -678,57 +686,140 @@ if (logoutBtn) {
 
 /* ========= 3D HERO (full-screen hero that fades on scroll) ========= */
 (function () {
-  const canvas = document.getElementById('three-canvas');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 1000 );
-  camera.position.z = 3;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio || 1);
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  // const canvas = document.getElementById('three-canvas');
+  // const scene = new THREE.Scene();
+  // const camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  // camera.position.z = 3;
+  // const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  // renderer.setPixelRatio(window.devicePixelRatio || 1);
+  // renderer.setSize(window.innerWidth, window.innerHeight);
+  // === Scene setup ===
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 3;
 
-  // Lights
-  const d = new THREE.DirectionalLight(0xffffff, 1.2);
-  d.position.set(5,5,5);
-  scene.add(d);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
-  let model = null;
-  // GLTFLoader();const loader = new THREE.
-
-  // Friendly fallback model: Wallet glTF from Khronos sample models
-  loader.load(
-    'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Wallet/glTF/Wallet.gltf',
-    gltf => {
-      model = gltf.scene;
-      model.scale.set(2.2,2.2,2.2);
-      model.rotation.y = Math.PI * 0.05;
-      model.position.y = -0.25;
-      scene.add(model);
-    },
-    undefined,
-    err => {
-      console.error('3D model load error:', err);
-    }
-  );
-
-  function onResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    const renderer = new THREE.WebGLRenderer({
+      canvas: document.getElementById("three-canvas"),
+      antialias: true,
+      alpha: true,
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-  window.addEventListener('resize', onResize);
+    renderer.setPixelRatio(window.devicePixelRatio);
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if (model) {
-      const s = window.scrollY || document.documentElement.scrollTop;
-      const rotation = s * 0.002;
-      model.rotation.y = rotation;
-      model.rotation.x = Math.sin(rotation * 0.35) * 0.08;
+    // === Lighting ===
+    const light = new THREE.DirectionalLight(0xffffff, 2);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+    // === Model Loading ===
+    const mtlLoader = new THREE.MTLLoader();
+    const objLoader = new THREE.OBJLoader();
+    let model = null;
+
+    mtlLoader.load("CoinDollarSign.mtl", (materials) => {
+      materials.preload();
+      objLoader.setMaterials(materials);
+      objLoader.load(
+        "CoinDollarSign.obj",
+        (object) => {
+          model = object;
+
+          // ✅ Center and scale model
+          const box = new THREE.Box3().setFromObject(model);
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 2 / maxDim;
+          model.scale.setScalar(scale);
+
+          const center = box.getCenter(new THREE.Vector3());
+          model.position.sub(center); // center the model
+
+          scene.add(model);
+        },
+        undefined,
+        (error) => console.error("❌ Error loading OBJ:", error)
+      );
+    });
+
+    // === Animate + Scroll effect ===
+    function animate() {
+      requestAnimationFrame(animate);
+      if (model) {
+        // ✅ Limit rotation so model stays visible
+        const maxRotation = Math.PI * 2; // 1 full rotation
+        const scrollY = Math.min(window.scrollY * 0.002, maxRotation);
+
+        model.rotation.y = scrollY;
+        model.rotation.x = Math.sin(scrollY * 0.5) * 0.1; // subtle motion
+
+        // ✅ Fade-out effect on heavy scroll
+        const fadeStart = 1000;  // start fading
+        const fadeEnd = 2500;    // fully faded
+        if (window.scrollY > fadeStart) {
+          const opacity = Math.max(0, 1 - (window.scrollY - fadeStart) / (fadeEnd - fadeStart));
+          renderer.domElement.style.opacity = opacity;
+        } else {
+          renderer.domElement.style.opacity = 1;
+        }
+      }
+      renderer.render(scene, camera);
     }
-    renderer.render(scene, camera);
-  }
-  animate();
+    animate();
+
+    // === Responsive resize ===
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  
+
+
+  // // Lights
+  // const d = new THREE.DirectionalLight(0xffffff, 1.2);
+  // d.position.set(5,5,5);
+  // scene.add(d);
+  // scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+  // let model = null;
+  // const loader = new THREE.GLTFLoader();
+
+  // // Friendly fallback model: Wallet glTF from Khronos sample models
+  // loader.load(
+  //   'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Wallet/glTF/Wallet.gltf',
+  //   gltf => {
+  //     model = gltf.scene;
+  //     model.scale.set(2.2,2.2,2.2);
+  //     model.rotation.y = Math.PI * 0.05;
+  //     model.position.y = -0.25;
+  //     scene.add(model);
+  //   },
+  //   undefined,
+  //   err => {
+  //     console.error('3D model load error:', err);
+  //   }
+  // );
+
+  // function onResize() {
+  //   camera.aspect = window.innerWidth / window.innerHeight;
+  //   camera.updateProjectionMatrix();
+  //   renderer.setSize(window.innerWidth, window.innerHeight);
+  // }
+  // window.addEventListener('resize', onResize);
+
+  // function animate() {
+  //   requestAnimationFrame(animate);
+  //   if (model) {
+  //     const s = window.scrollY || document.documentElement.scrollTop;
+  //     const rotation = s * 0.002;
+  //     model.rotation.y = rotation;
+  //     model.rotation.x = Math.sin(rotation * 0.35) * 0.08;
+  //   }
+  //   renderer.render(scene, camera);
+  // }
+  // animate();
 })();
 
 /* ========= SCROLL FADE LOGIC ========= */
@@ -1138,83 +1229,6 @@ if (logoutBtn) {
   })();
 
 })();
-</script>
-
-
-
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/MTLLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/OBJLoader.js"></script>
-<script>
-  
-    // === Scene Setup ===
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 3;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas: document.getElementById("three-canvas"),
-      antialias: true
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    // === Lights ===
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    const directional = new THREE.DirectionalLight(0xffffff, 1.2);
-    directional.position.set(5, 5, 5);
-    scene.add(ambient, directional);
-
-    // === Loading Screen ===
-    const loading = document.getElementById("loading");
-
-    // === Model Loading ===
-    // const mtlLoader = new THREE.MTLLoader();
-    // mtlLoader.load("CoinDollarSign.mtl", (materials) => {
-    //   materials.preload();
-
-    //   const objLoader = new THREE.OBJLoader();
-    //   objLoader.setMaterials(materials);
-
-    //   objLoader.load(
-    //     "CoinDollarSign.obj",
-    //     (object) => {
-    //       object.scale.set(1.5, 1.5, 1.5);
-    //       object.rotation.x = 0.3;
-    //       scene.add(object);
-    //       loading.classList.add("hide");
-
-    //       function animate() {
-    //         requestAnimationFrame(animate);
-
-    //         // Scroll-based rotation
-    //         const scrollY = window.scrollY * 0.002;
-    //         object.rotation.y = scrollY;
-
-    //         renderer.render(scene, camera);
-    //       }
-    //       animate();
-    //     },
-    //     (xhr) => {
-    //       if (xhr.lengthComputable) {
-    //         const percent = (xhr.loaded / xhr.total) * 100;
-    //         loading.textContent = Loading... ${percent.toFixed(0)}%;
-    //       }
-    //     },
-    //     (error) => {
-    //       console.error("Error loading model:", error);
-    //       loading.textContent = "❌ Error loading wallet model";
-    //     }
-    //   );
-    // });
-
-    // === Responsive Resize ===
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  
   </script>
   </body>
 </html>
-
