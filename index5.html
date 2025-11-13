@@ -904,12 +904,15 @@ model.rotation.x = Math.sin(scrollY * 0.5) * 0.1;
   // load / save
   function load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+         const currentUser = localStorage.getItem("et_current_user");
+    const raw = localStorage.getItem(`${STORAGE_KEY}_${currentUser}`);
       expenses = raw ? JSON.parse(raw) : [];
     } catch (e) { expenses = []; }
   }
-  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses)); }
-
+function save() {const currentUser = localStorage.getItem("et_current_user");
+if (currentUser) {
+  localStorage.setItem(`${STORAGE_KEY}_${currentUser}`, JSON.stringify(expenses));
+} }
   // income helpers (used by nav module too)
   function getStoredIncome() {
     try {
