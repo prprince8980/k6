@@ -334,6 +334,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
   background: linear-gradient(90deg,#0078d4,#00b37a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+    }
     .welcome{
       color: linear-gradient(90deg,#00b37a,#0078d4);
     }
@@ -357,6 +358,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
     <a href="#about" class="nav-link">About</a>
     <a href="./idea.html" class="nav-link">Reduce Expenses</a>
     <a href="./reduce.html" class="nav-link">Creative Ideas</a>
+    <a href="./chart.html" class="nav-link">Line Chart</a>
     <button id="closeMenu" type="button" style="margin-top:auto; color:var(--text-muted); background:transparent; border:none; text-align:left;">Close</button>
   </nav>
 <button id="logoutBtn" 
@@ -591,6 +593,18 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
               <input id="income-input" type="number" step="0.01" min="0" placeholder="e.g., 2500.00" />
               <span class="error-message" id="income-error"></span>
             </div>
+            <canvas><div class="card chart-card">
+  <h3 class="card-title">Spending by Category</h3>
+  <div class="chart-container">
+    <canvas id="category-chart"></canvas>
+  </div>
+</div> <div class="card chart-card">
+  <h3 class="card-title">Expenses Over Time</h3>
+  <div class="chart-container">
+    <canvas id="line-chart"></canvas>
+  </div>
+</div>
+</canvas>
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" id="income-cancel">Cancel</button>
@@ -606,7 +620,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--col
   </section>
 
   <!-- ABOUT anchor -->
-  <section id="about" style="padding:40px 0 120px; text-align:center;">
+  <section id="about" style="padding:40px 0 120px; text-align:center;box-shadow: 0 0 7px white;">
     <div class="container">
       <h2>About</h2>
       <p style="color:var(--text-muted); max-width:760px; margin:12px auto;">This demo shows a 3D wallet hero with a localStorage-backed expense tracker. The navigation (top-left) contains links and an "Add Income" action — set income to see profit / loss (income minus total expenses).</p>
@@ -1261,6 +1275,9 @@ if (currentUser) {
   })();
 
 })();
+
+
+
   </script>
   </body>
 </html>
