@@ -1168,44 +1168,44 @@ if (logoutBtn) {
     const loading = document.getElementById("loading");
 
     // === Model Loading ===
-    const mtlLoader = new THREE.MTLLoader();
-    mtlLoader.load("CoinDollarSign.mtl", (materials) => {
-      materials.preload();
+    // const mtlLoader = new THREE.MTLLoader();
+    // mtlLoader.load("CoinDollarSign.mtl", (materials) => {
+    //   materials.preload();
 
-      const objLoader = new THREE.OBJLoader();
-      objLoader.setMaterials(materials);
+    //   const objLoader = new THREE.OBJLoader();
+    //   objLoader.setMaterials(materials);
 
-      objLoader.load(
-        "CoinDollarSign.obj",
-        (object) => {
-          object.scale.set(1.5, 1.5, 1.5);
-          object.rotation.x = 0.3;
-          scene.add(object);
-          loading.classList.add("hide");
+    //   objLoader.load(
+    //     "CoinDollarSign.obj",
+    //     (object) => {
+    //       object.scale.set(1.5, 1.5, 1.5);
+    //       object.rotation.x = 0.3;
+    //       scene.add(object);
+    //       loading.classList.add("hide");
 
-          function animate() {
-            requestAnimationFrame(animate);
+    //       function animate() {
+    //         requestAnimationFrame(animate);
 
-            // Scroll-based rotation
-            const scrollY = window.scrollY * 0.002;
-            object.rotation.y = scrollY;
+    //         // Scroll-based rotation
+    //         const scrollY = window.scrollY * 0.002;
+    //         object.rotation.y = scrollY;
 
-            renderer.render(scene, camera);
-          }
-          animate();
-        },
-        (xhr) => {
-          if (xhr.lengthComputable) {
-            const percent = (xhr.loaded / xhr.total) * 100;
-            loading.textContent = Loading... ${percent.toFixed(0)}%;
-          }
-        },
-        (error) => {
-          console.error("Error loading model:", error);
-          loading.textContent = "❌ Error loading wallet model";
-        }
-      );
-    });
+    //         renderer.render(scene, camera);
+    //       }
+    //       animate();
+    //     },
+    //     (xhr) => {
+    //       if (xhr.lengthComputable) {
+    //         const percent = (xhr.loaded / xhr.total) * 100;
+    //         loading.textContent = Loading... ${percent.toFixed(0)}%;
+    //       }
+    //     },
+    //     (error) => {
+    //       console.error("Error loading model:", error);
+    //       loading.textContent = "❌ Error loading wallet model";
+    //     }
+    //   );
+    // });
 
     // === Responsive Resize ===
     window.addEventListener("resize", () => {
