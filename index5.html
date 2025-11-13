@@ -747,12 +747,13 @@ if (logoutBtn) {
     function animate() {
       requestAnimationFrame(animate);
       if (model) {
-        // ✅ Limit rotation so model stays visible
-        const maxRotation = Math.PI * 2; // 1 full rotation
-        const scrollY = Math.min(window.scrollY * 0.006, maxRotation);
+      const maxRotation = Math.PI * 6; // 3 spins
+const scrollY = Math.min(window.scrollY * 0.02, maxRotation);
 
-        model.rotation.y = scrollY;
-        model.rotation.x = Math.sin(scrollY * 0.5) * 0.1; // subtle motion
+model.position.y = 1.6;
+model.rotation.y = scrollY + 0.5; // start at slight angle
+model.rotation.x = Math.sin(scrollY * 0.5) * 0.1;
+
 
         // ✅ Fade-out effect on heavy scroll
         const fadeStart = 1000;  // start fading
