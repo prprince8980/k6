@@ -840,6 +840,37 @@
     .welcome {
       color: linear-gradient(90deg, #00b37a, #0078d4);
     }
+
+    .voice-input-box {
+  position: relative;
+  width: 100%;
+}
+
+.voice-input-box input {
+  padding-right: 45px !important;
+}
+
+.mic-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  color: #3b82f6;
+  transition: 0.2s;
+}
+
+.mic-icon.listening {
+  color: #ef4444;
+  transform: translateY(-50%) scale(1.2);
+}
+
+.mic-icon:hover {
+  color: #1e40af;
+  transform: translateY(-50%) scale(1.15);
+}
+
   </style>
 </head>
 
@@ -951,17 +982,14 @@
             <h2 class="card-title">Add New Expense</h2>
             <form id="expense-form" autocomplete="off">
               <div class="form-group">
-             <label for="expense-name" style="display:flex;justify-content:space-between;align-items:center;">
-  Expense Name <span class="required">*</span>
+      <label for="expense-name">Expense Name <span class="required">*</span></label>
 
-  <!-- Microphone Button -->
-  <button type="button" id="voice-btn" 
-    style="background:#10b981;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
-    🎤 Speak
-  </button>
-</label>
+<div class="voice-input-box">
+  <input id="expense-name" required type="text" placeholder="e.g., Grocery Shopping" />
+  <span id="voice-btn" class="mic-icon">🎤</span>
+</div>
 
-<input id="expense-name" required type="text" placeholder="e.g., Grocery Shopping" />
+<span class="error-message" id="name-error"></span>
 
                 <span class="error-message" id="name-error"></span>
               </div>
@@ -1176,6 +1204,47 @@
   <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r146/examples/js/loaders/OBJLoader.js"></script>
 
   <script>
+/* -------------------------------
+   GOOGLE STYLE VOICE INPUT FIXED
+-------------------------------- */
+const micBtn = document.getElementById("voice-btn");
+const nameInputV = document.getElementById("expense-name");
+const amountInputV = document.getElementById("expense-amount");
+
+let SpeechRecognitionV = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognitionV) {
+  const recog = new SpeechRecognitionV();
+  recog.lang = "en-IN";
+  recog.interimResults = false;
+
+  micBtn.addEventListener("click", () => {
+    micBtn.classList.add("listening");
+    recog.start();
+  });
+
+  recog.onresult = (event) => {
+    let spoken = event.results[0][0].transcript.toLowerCase();
+
+    // extract amount
+    const amtMatch = spoken.match(/(\d+(\.\d+)?)/);
+    const amount = amtMatch ? amtMatch[0] : "";
+    const name = spoken.replace(amount, "").trim();
+
+    nameInputV.value = name;
+    amountInputV.value = amount;
+
+    micBtn.classList.remove("listening");
+    showToast("Voice added: " + spoken, "success");
+  };
+
+  recog.onerror = () => {
+    micBtn.classList.remove("listening");
+    showToast("Voice error — try again", "error");
+  };
+} else {
+  micBtn.style.display = "none";
+}
 
 
 
